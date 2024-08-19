@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clicker Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            position: relative;
+            background-image: url('background.png'); /* Путь к изображению фона */
+            background-size: cover;
+            color: white; /* Делаем текст белым */
+        }
+        #coin {
+            width: 200px; /* Увеличиваем размер монетки */
+            height: 200px; /* Увеличиваем размер монетки */
+            background-image: url('coin.png'); /* Путь к изображению монетки */
+            background-size: cover;
+            display: inline-block;
+            position: relative;
+        }
+        #score {
+            font-size: 60px; /* Еще больше увеличиваем размер текста */
+            font-weight: bolder; /* Делаем текст еще жирнее */
+            margin-bottom: 70px; /* Увеличиваем отступ снизу */
+        }
+        #energy {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #boost {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 24px;
+            padding: 20px 40px; /* Увеличиваем размер кнопки */
+            cursor: pointer;
+            background-image: url('boost.png'); /* Путь к изображению кнопки буста */
+            background-size: cover;
+            background-color: transparent; /* Прозрачный фон */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            width: 80px; /* Ширина кнопки */
+            height: 68px; /* Высота кнопки */
+        }
+        .hidden {
+            display: none;
+        }
+        #increase-click, #increase-energy {
+            font-size: 24px;
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        .click-value {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            animation: fadeOut 1s forwards;
+        }
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="scene1">
+        <div id="score">0</div> <!-- Перемещаем счётчик выше -->
+        <div id="coin"></div>
+        <div id="energy">Energy: 1000/1000</div> <!-- Добавляем индикатор энергии -->
+        <button id="boost"></button> <!-- Добавляем кнопку для бустов -->
+    </div>
+    <div id="scene2" class="hidden">
+        <h1>Welcome to the Boost Scene!</h1>
+        <button id="increase-click">Increase Click Power (100)</button>
+        <button id="increase-energy">Increase Energy Capacity (100)</button>
+        <button id="back">Back to Game</button>
+    </div>
+
+    <script>
+        let score = 0;
+        let clickPower = 1;
+        let clickUpgradeCost = 100;
+        let energyUpgradeCost = 100;
+        const coin = document.getElementById('coin');
+        const scoreDisplay = document.getElementById('score');
+        const energyDisplay = document.getElementById('energy');
+        const boostButton = document.getElementById('boost');
+        const scene1 = document.getElementById('scene1');
+        const scene2 = document.getElementById('scene2');
+        const backButton = document.getElementById('back');
+        const increaseClickButton = document.getElementById('increase-click');
+        const increaseEnergyButton = document.getElementById('increase-energy');
+        let energy = 1000;
+        let maxEnergy = 1000;
+
+        coin.addEventListener('click', (event) => {
+            if (energy >= clickPower) {
+                score += clickPower;
+                scoreDisplay.textContent = score;
+                energy -= clickPower;
+                energyDisplay.textContent = `Energy: ${energy}/${maxEnergy}`;
+
+                // Создаем элемент для отображения значения клика
+                const clickValue = document.createElement('div');
+                clickValue.textContent = `+${clickPower}`;
+                clickValue.classList.add('click-value');
+                clickValue.style.left = `${event.clientX - 10}px`;
+                clickValue.style.top = `${event.clientY - 20}px`;
+                document.body.appendChild(clickValue);
+
+                // Удаляем элемент после анимации
+                clickValue.addEventListener('animationend', () => {
+                    clickValue.remove();
+                });
+            } else {
+                alert('Not enough energy to click!');
+            }
+        });
+
+        // Восстановление энергии каждые 3 секунды
+        setInterval(() => {
+            if (energy < maxEnergy) {
+                energy++;
+                energyDisplay.textContent = `Energy: ${energy}/${maxEnergy}`;
+            }
+        }, 3000);
+
+        // Обработчик для кнопки бустов
+        boostButton.addEventListener('click', () => {
+            scene1.classList.add('hidden');
+            scene2.classList.remove('hidden');
+        });
+
+        // Обработчик для кнопки возврата
+        backButton.addEventListener('click', () => {
+            scene2.classList.add('hidden');
+            scene1.classList.remove('hidden');
+        });
+
+        // Обработчик для кнопки увеличения силы клика
+        increaseClickButton.addEventListener('click', () => {
+            if (score >= clickUpgradeCost) {
+                score -= clickUpgradeCost;
+                clickPower++;
+                clickUpgradeCost *= 2;
+                increaseClickButton.textContent = `Increase Click Power (${clickUpgradeCost})`;
+                scoreDisplay.textContent = score;
+                alert('Click power increased!');
+            } else {
+                alert('Not enough score to upgrade click power!');
+            }
+        });
+
+        // Обработчик для кнопки увеличения объема энергии
+        increaseEnergyButton.addEventListener('click', () => {
+            if (score >= energyUpgradeCost) {
+                score -= energyUpgradeCost;
+                maxEnergy += 100;
+                energyUpgradeCost *= 2;
+                increaseEnergyButton.textContent = `Increase Energy Capacity (${energyUpgradeCost})`;
+                scoreDisplay.textContent = score;
+                energyDisplay.textContent = `Energy: ${energy}/${maxEnergy}`;
+                alert('Energy capacity increased!');
+            } else {
+                alert('Not enough score to upgrade energy capacity!');
+            }
+        });
+    </script>
+</body>
+</html>
